@@ -64,12 +64,12 @@
         <div class="col-sm-2 sidenav" id="selector_desc">
         </div>
         <div class="col-sm-8 text-left">
-            <h1>   Narrative visualization for Summer Olympics Medals </h1>
+            <h1>Summer Olympics Medals (1976 - 2008)</h1>
             <hr>
             <ul class="list-unstyled" style="color: #803432; font-size:20px">
                 <li id="parameters"></li>
-                <li>Hover on a discipline line to view medal counts of discsipline by year </li>
-                <li>Click on discipline line to drill down and visualize athlete details  </li>
+                <li>1) Hover on a discipline line to view medal counts of discsipline by year </li>
+                <li>2) Click on discipline line to drill down and visualize athlete details  </li>
             </ul>
             <div id="narrative_viz"></div>
             <br><br><br><br>
@@ -85,7 +85,7 @@
 </footer>
 
 <script>
-    document.getElementById('parameters').innerHTML =  `Medals counts by discipline for Country=${getParameterByName("country")}, Sport=${getParameterByName("sport")}`;
+    document.getElementById('parameters').innerHTML =  `Medals counts by discipline for Country=${getParameterByName("country")}, Sport=${getParameterByName("sport")}. Below are actions available on this scene:`;
     let years = new Set();
     let years_arr = [];
     let final_array = [];
