@@ -48,20 +48,33 @@
 
 <nav class="navbar navbar-inverse">
     <div class="container-fluid">
-
+        <div class="collapse navbar-collapse" id="myNavbar">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
 
 <div class="container-fluid text-center">
     <div class="row content">
-        <div class="col-sm-2 sidenav"></div>
+        <div class="col-sm-2 sidenav">
+        </div>
         <div class="col-sm-8 text-left">
             <h1>   Narrative visualization for Summer Olympics Medals(1976 - 2008) </h1>
             <p> </p>
             <hr>
+            <ul class="list-unstyled" style="color: #803432; font-size:20px">
+                <li >Multi-Line chart with each line displaying olympic
+                    medals of a country over each olympic year</li>
+                <li>Hover on a country line to view medal count of a country by year </li>
+                <li>Click on country line to drill down and visualize trends of medals by sport  </li>
+            </ul>
+
             <div id="narrative_viz"></div>
         </div>
-        <div class="col-sm-2 sidenav" id="country_info"></div>
+        <div class="col-sm-2 sidenav" id="country_info">
+        </div>
     </div>
 </div>
 
@@ -111,7 +124,8 @@
         margin = ({top: 10, right: 30, bottom: 10, left: 50})
         xAxis = g => g
             .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0));
+            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
+
 
         years_arr.forEach(year => {
             year_dates_arr.push(new Date(year, 0, 1, 0))
@@ -133,7 +147,7 @@
                     .attr("x", 3)
                     .attr("text-anchor", "start")
                     .attr("font-weight", "bold")
-                //    .text('Number of Medals')
+                     // .text('#Medals')
             )
 
         line = d3.line()
@@ -164,13 +178,13 @@
                 return line(d.values);
             });
 
-        let country_info = '<h1> </h1><p> </p><hr><h4><table class="table table-bordered pt-5"></h4>';
+        let country_info = '<ul class="list-group">'
+
         countries_arr = Array.from(countries);
         for (index in countries_arr) {
-            let row = `<tr><td style="color:${colors(index)}">${countries_arr[index]}</td></tr>`;
-            country_info = country_info + row;
+            country_info = country_info + `<li class="list-group-item" style="color:${colors(index)}">${countries_arr[index]}</li>`
         }
-        country_info = country_info + '</table>';
+        country_info = country_info + '</ul>';
         document.getElementById('country_info').innerHTML = country_info;
         svg.call(hover, path, click);
         svg.node();
