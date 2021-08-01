@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>kk45 - DS 416 Narrative Viz</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src='https://d3js.org/d3.v7.min.js'></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+
+    <script src="./js/utils.js"></script>
+    <style>
+        /* Remove the navbar's default margin-bottom and rounded borders */
+        .navbar {
+            margin-bottom: 0;
+            border-radius: 0;
+        }
+
+        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+        .row.content {height: 850px}
+
+        /* Set gray background color and 100% height */
+        .sidenav {
+            padding-top: 20px;
+            background-color: #f1f1f1;
+            height: 100%;
+        }
+
+        /* Set black background color, white text and some padding */
+        footer {
+            background-color: #555;
+            color: white;
+            padding: 25px;
+        }
+
+        /* On small screens, set height to 'auto' for sidenav and grid */
+        @media screen and (max-width: 767px) {
+            .sidenav {
+                height: auto;
+                padding: 15px;
+            }
+            .row.content {height:auto;}
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+
+    </div>
+</nav>
+
+<div class="container-fluid text-center">
+    <div class="row content">
+        <div class="col-sm-2 sidenav" id="selector_desc">
+        </div>
+        <div class="col-sm-8 text-left">
+            <h1>   Narrative visualization for Summer Olympics Medals </h1>
+            <hr>
+            <h4 id="header_title" style="text-align: center"> </h4>
+            <br>
+            <h4 id="footer_title" style="text-align: center">
+            </h4>
+            <br>
+            <div id="narrative_viz"></div>
+            <br>
+            <br>
+        </div>
+        <div class="col-sm-2 sidenav" id="discipline_info"></div>
+    </div>
+</div>
+
+<footer class="container-fluid text-center">
+</footer>
+
+<script>
+    document.getElementById('header_title').innerHTML =  `Medals counts by discipline for ${getParameterByName("country")} and ${getParameterByName("sport")}`;
+    document.getElementById('footer_title').innerHTML =  `Click on a disciple to visualize details of athlete`;
+
+
+    let years = new Set();
+    let years_arr = [];
+    let final_array = [];
+    let year_dates_arr = [];
+
+    loadAllData().then(records => {
+        records = getUniqueRecords(records);
+
+        let sport = getParameterByName('sport');
+        let country = getParameterByName('country');
+        let disciplines = new Set();
+        let medals_by_discipline = {};
+
+        records.forEach(record => {
+            if (record.Country === country && record.Sport === sport) {
+                if (record.Year) {
+                    years.add(record.Year);
+                }
+                disciplines.add(record.Discipline);
+                let medals = medals_by_discipline[record.Discipline];
+                medals = medals ? medals : {};
+                let medals_year = medals[record.Year];
+                medals[record.Year] = medals_year ? medals_year + 1 : 1;
+                medals_by_discipline[record.Discipline] = medals;
+            }
+        })
+
+        years_arr = Array.from(years).sort();
+        let olympic_year = new Set();
+        let medals_by_year = {};
+        records.forEach(record => {
+            if (record.Country === country && record.Sport === sport) {
+                if (record.Year) {
+                    years.add(record.Year);
+                }
+                olympic_year.add(record.Year);
+                let medals = medals_by_year[record.Year];
+                medals = medals ? medals : {};
+                let medals_discipline = medals[record.Discipline];
+                medals[record.Discipline] = medals_discipline ? medals_discipline + 1 : 1;
+                medals_by_year[record.Year] = medals;
+            }
+        })
+
+        console.info('medals_by_year=', medals_by_year);
+        console.info('medals_by_discipline=', medals_by_discipline);
+        for (let discipline_medal in medals_by_discipline) {
+            let discipline_medals_count = {};
+            let medals_year = medals_by_discipline[discipline_medal], medals_array;
+            medals_array = [];
+            years.forEach(year => {
+                medals_array.push(parseInt(medals_year[year]) || 0);
+            })
+            discipline_medals_count['values'] = medals_array;
+            discipline_medals_count['name'] = discipline_medal;
+            final_array.push(discipline_medals_count);
+        }
+
+        height = 200;
+        width = 600;
+        const svg = d3.select('#narrative_viz').append("svg").attr("viewBox", [0, 0, width, height]).style("overflow", "visible");
+        margin = ({top: 20, right: 20, bottom: 30, left: 30})
+        xAxis = g => g
+            .attr("transform", `translate(0,${height - margin.bottom})`)
+            .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0));
+
+        years_arr.forEach(year => {
+            year_dates_arr.push(new Date(year, 0, 1, 0))
+        })
+
+        x = d3.scaleTime()
+            .domain([new Date(d3.min(years), 0, 1, 0), new Date(d3.max(years), 0, 1, 0)])
+            .range([margin.left, width - margin.right])
+
+        y = d3.scaleLinear()
+            .domain([0, d3.max(final_array, d => d3.max(d.values))])
+            .range([height - margin.bottom, margin.top])
+
+        yAxis = g => g
+            .attr("transform", `translate(${margin.left},0)`)
+            .call(d3.axisLeft(y))
+            .call(g => g.select(".domain").remove())
+            .call(g => g.select(".tick:last-of-type text").clone()
+                    .attr("x", 3)
+                    .attr("text-anchor", "start")
+                    .attr("font-weight", "bold")
+                //    .text('Number of Medals')
+            )
+
+        line = d3.line()
+            .defined(d => !isNaN(d))
+            .x((d, i) => {
+                return x(new Date(getSetValueByIndex(years, i), 0, 1, 0))
+            })
+            .y(d => {
+                return y(d)
+            })
+
+        svg.append("g").call(xAxis);
+        svg.append("g").call(yAxis);
+
+        const path = svg.append("g")
+            .attr("fill", "none")
+            .attr("stroke-width", 1.5)
+            .attr("stroke-linejoin", "round")
+            .attr("stroke-linecap", "round")
+            .selectAll("path")
+            .data(final_array)
+            .join("path")
+            .style("mix-blend-mode", "multiply")
+            .style("stroke", function(d, i) { // Add dynamically
+                return colors(i); })
+            .attr("d", d => {
+                // console.log('line=', line(d.values));
+                return line(d.values);
+            });
+
+        let discipline_info = '<h1> </h1><p> </p><hr><h4><table class="table table-bordered pt-5"></h4>';
+        disciplines_arr = Array.from(disciplines);
+        for (index in disciplines_arr) {
+            let row = `<tr><td style="color:${colors(index)}">${disciplines_arr[index]}</td></tr>`;
+            discipline_info = discipline_info + row;
+        }
+        discipline_info = discipline_info + '</table>';
+        document.getElementById('discipline_info').innerHTML = discipline_info;
+
+        svg.call(hover, path, click);
+        svg.node();
+    })
+
+    function click(event) {
+        event.preventDefault();
+        const pointer = d3.pointer(event, this);
+        const xm = x.invert(pointer[0]);
+        const ym = y.invert(pointer[1]);
+        let i = d3.bisectCenter(year_dates_arr, xm);
+        const s = d3.least(final_array, d => Math.abs(d.values[i] - ym));
+
+        let split_path = window.location.pathname.split("/");
+        let redirectPath = split_path.slice(0, split_path.length - 1);
+        redirectPath.push("medals_by_athlete.html");
+        let country = getParameterByName('country');
+        let sport = getParameterByName('sport');
+        let basePath = redirectPath.join("/") + `?country=${country}&sport=${sport}&discipline=${s.name}`
+
+        window.location = basePath;
+    }
+
+</script>
+</body>
+</html>

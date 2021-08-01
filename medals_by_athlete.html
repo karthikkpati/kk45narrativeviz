@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>kk45 - DS 416 Narrative Viz</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src='https://d3js.org/d3.v7.min.js'></script>
+    <script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+    <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+    <script src="./js/utils.js"></script>
+    <link rel="stylesheet" href="css/bootstrap_styles.css">
+    <style>
+        /* Remove the navbar's default margin-bottom and rounded borders */
+        .navbar {
+            margin-bottom: 0;
+            border-radius: 0;
+        }
+
+        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+        .row.content {height: 850px}
+
+        /* Set gray background color and 100% height */
+        .sidenav {
+            padding-top: 20px;
+            background-color: #f1f1f1;
+            height: 100%;
+        }
+
+        /* Set black background color, white text and some padding */
+        footer {
+            background-color: #555;
+            color: white;
+            padding: 25px;
+        }
+
+        /* On small screens, set height to 'auto' for sidenav and grid */
+        @media screen and (max-width: 767px) {
+            .sidenav {
+                height: auto;
+                padding: 15px;
+            }
+            .row.content {height:auto;}
+        }
+
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+
+    </div>
+</nav>
+
+<div class="container-fluid text-center">
+    <div class="row content table-wrapper-scroll-y my-custom-scrollbar">
+        <div class="col-sm-2 sidenav" id="selector_desc">
+        </div>
+        <div class="col-sm-8 text-left">
+            <h1>   Narrative visualization for Summer Olympics Medals </h1>
+            <hr>
+            <h4 id="header_title" style="text-align: center"> </h4>
+            <br>
+            <h4 id="footer_title" style="text-align: center">
+            </h4>
+            <br>
+            <div id="narrative_viz" class="table-wrapper-scroll-y my-custom-scrollbar"></div>
+            <br>
+            <br>
+        </div>
+        <div class="col-sm-2 sidenav" id="color_desc"></div>
+    </div>
+</div>
+
+<footer class="container-fluid text-center">
+</footer>
+
+<script>
+    document.getElementById('header_title').innerHTML =  `Athlete Bio for ${getParameterByName("country")},
+     ${getParameterByName("sport")} and ${getParameterByName("discipline")}`;
+
+    let years = new Set();
+    let years_arr = [];
+    let final_array = [];
+    let year_dates_arr = [];
+
+    loadAllData().then(records => {
+        records = getUniqueRecords(records);
+
+        let sport = getParameterByName('sport');
+        let country = getParameterByName('country');
+        let discipline = getParameterByName('discipline');
+
+        let disciplines = new Set();
+        let medals_by_discipline = {};
+        let athletes_by_year = {};
+        records.forEach(record => {
+            if (record.Country === country && record.Sport === sport && record.Discipline === discipline) {
+                if (record.Year) {
+                    years.add(record.Year);
+                }
+                let athletes = athletes_by_year[record.Year];
+                athletes = athletes ? athletes : [];
+                athletes.push(record);
+                athletes_by_year[record.Year] = athletes;
+            }
+        })
+
+        let row = 0;
+        let table_headers = ['Year', 'Sport', 'Discipline', 'Event', 'Athlete', 'Gender', 'Country_Code', 'Medal'];
+        let final_array = [];
+        let header_col = 0;
+        for (let table_header in table_headers) {
+            final_array.push( {
+                "col": 0,
+                "row": row,
+                "style": {
+                    "background-color": "gray",
+                    "font-style": "italic",
+                    "font-weight": "bold",
+                    "color": "red"
+                },
+                "text": table_headers[table_header]
+            })
+            header_col  = header_col  + 1;
+        }
+        row = row + 1;
+        for (let year in athletes_by_year) {
+            console.info('year=', year);
+            console.info('athletes=', athletes_by_year[year]);
+            final_array.push( {
+                "col": 0,
+                "row": row,
+                "rowspan": athletes_by_year[year].length,
+                "style": {
+                    "background-color": "gray",
+                    "font-style": "italic",
+                    "font-weight": "bold",
+                },
+                "text": year
+            })
+
+            for (let index in athletes_by_year[year]) {
+                let col = 1;
+                let athlete = athletes_by_year[year][index];
+                for (const [key, value] of Object.entries(athlete)) {
+                    if (key !== 'Year' && key !== 'Event_gender' && key !== 'City' && key !== 'Country') {
+                        final_array.push( {
+                            "col": col,
+                            "row": row,
+                            "text": value,
+                            "style": {
+                                "background-color": "gray",
+                                "font-style": "italic",
+                                "font-weight": "bold"
+                            }
+                        })
+                        col = col + 1;
+                    }
+                }
+                row = row + 1;
+            }
+
+        }
+
+        console.info('final_array=', final_array);
+        let cells = d3.nest()
+            .key(function(d) {return +d.row;})
+            .entries(final_array);
+
+        console.info('cells=', cells);
+        //table-bordered table-striped mb-0"
+        var table = d3.select('#narrative_viz').append('table').classed('table', true).classed('table-bordered', true).classed('table-striped', true).classed('mb-0', true)
+
+        console.info('table=', table);
+        let tr = table.selectAll('tr')
+            .data(cells)
+            .enter().append('tr');
+
+        let td = tr.selectAll('td')
+            .data(function(d) {
+                console.log('d=', d);
+                return d.values;})
+            .enter().append('td')
+            .attr('rowspan', function(d) {return d.rowspan;})
+            .attr('colspan', function(d) {return d.colspan;})
+            .each(function(d) {
+                d3.select(this).style(d.style);
+            })
+            .text(function(d) {return d.text;});
+
+        console.info('td=', td);
+
+    });
+    d3.select(self.frameElement).style("height", "600px");
+
+</script>
+</body>
+</html>
