@@ -49,25 +49,34 @@
 
 <nav class="navbar navbar-inverse">
     <div class="container-fluid">
-
+        <div class="collapse navbar-collapse" id="myNavbar">
+            <ul class="nav navbar-nav">
+                <li class="inactive"><a href="./medals_by_country.html">Home</a></li>
+            </ul>
+        </div>
     </div>
 </nav>
 
 <div class="container-fluid text-center">
     <div class="row content">
-        <div class="col-sm-2 sidenav" id="selector_desc">
+        <div class="col-sm-2 sidenav align-items-center" id="selector_desc">
         </div>
         <div class="col-sm-8 text-left">
             <h1>   Narrative visualization for Summer Olympics Medals </h1>
             <hr>
-            <h4 id="header_title" style="text-align: center"> </h4>
-            <br>
-            <h4 id="footer_title" style="text-align: center">
-            </h4>
-            <br>
+            <ul class="list-unstyled" style="color: #803432; font-size:20px">
+                <li id="country_title"></li>
+                <li>Hover on a sport line to view medal counts of sport by year </li>
+                <li>Click on sport line to drill down and visualize trends of medals by discipline  </li>
+                <li id="footer_title"></li>
+            </ul>
             <div id="narrative_viz"></div>
-            <br>
-            <br>
+            <br><br><br><br>
+            <ul class="list-unstyled text-right" style="color: #803432; font-size:20px">
+
+                <li><a href="./medals_by_country.html">Click Here to start over  </a></li>
+            </ul>
+
         </div>
         <div class="col-sm-2 sidenav table-wrapper-scroll-y my-custom-scrollbar" id="sport_info"></div>
     </div>
@@ -77,10 +86,7 @@
 </footer>
 
 <script>
-    document.getElementById('header_title').innerHTML =  `Medals count by sport for ${getParameterByName("country")}`;
-    document.getElementById('footer_title').innerHTML =  `Click on a sport to visualize discipline trends for ${getParameterByName("country")} by discipline `;
-
-
+    document.getElementById('country_title').innerHTML =  `Medals count by sport for Country = ${getParameterByName("country")}`;
     let years = new Set();
     let years_arr = [];
     let final_array = [];
@@ -181,13 +187,12 @@
                 return line(d.values);
             });
 
-        let sport_info = '<h1> </h1><p> </p><hr><h4><table class="table table-bordered overf"></h4>';
+        let sport_info = '<ul class="list-group">'
         sports_arr = Array.from(sports);
         for (index in sports_arr) {
-            let row = `<tr><td style="color:${colors(index)}">${sports_arr[index]}</td></tr>`;
-            sport_info = sport_info + row;
+            sport_info = sport_info + `<li class="list-group-item" style="color:${colors(index)}">${sports_arr[index]}</li>`
         }
-        sport_info = sport_info + '</table>';
+
         document.getElementById('sport_info').innerHTML = sport_info;
         svg.call(hover, path, click);
         svg.node();

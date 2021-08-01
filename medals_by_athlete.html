@@ -51,7 +51,13 @@
 
 <nav class="navbar navbar-inverse">
     <div class="container-fluid">
-
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li class="inactive"><a href="./medals_by_country.html">Home</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -60,16 +66,19 @@
         <div class="col-sm-2 sidenav" id="selector_desc">
         </div>
         <div class="col-sm-8 text-left">
-            <h1>   Narrative visualization for Summer Olympics Medals </h1>
+            <h1>   Narrative visualization for Summer Olympics Medals(1976 - 2008) </h1>
+            <p> </p>
             <hr>
-            <h4 id="header_title" style="text-align: center"> </h4>
-            <br>
-            <h4 id="footer_title" style="text-align: center">
-            </h4>
-            <br>
+            <ul class="list-unstyled" style="color: #803432; font-size:20px">
+                <li id="parameters" ></li>
+            </ul>
+
             <div id="narrative_viz" class="table-wrapper-scroll-y my-custom-scrollbar"></div>
             <br>
-            <br>
+            <ul class="list-unstyled text-right" style="color: #803432; font-size:20px">
+
+                <li><a href="./medals_by_country.html">Click Here to start over  </a></li>
+            </ul>
         </div>
         <div class="col-sm-2 sidenav" id="color_desc"></div>
     </div>
@@ -79,8 +88,8 @@
 </footer>
 
 <script>
-    document.getElementById('header_title').innerHTML =  `Athlete Bio for ${getParameterByName("country")},
-     ${getParameterByName("sport")} and ${getParameterByName("discipline")}`;
+    document.getElementById('parameters').innerHTML =  `Athlete Bio for Country=${getParameterByName("country")},
+     Sport=${getParameterByName("sport")} and Discipline=${getParameterByName("discipline")}`;
 
     let years = new Set();
     let years_arr = [];

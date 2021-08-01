@@ -49,7 +49,13 @@
 
 <nav class="navbar navbar-inverse">
     <div class="container-fluid">
-
+        <div class="container-fluid">
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav">
+                    <li class="inactive"><a href="./medals_by_country.html">Home</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </nav>
 
@@ -60,14 +66,16 @@
         <div class="col-sm-8 text-left">
             <h1>   Narrative visualization for Summer Olympics Medals </h1>
             <hr>
-            <h4 id="header_title" style="text-align: center"> </h4>
-            <br>
-            <h4 id="footer_title" style="text-align: center">
-            </h4>
-            <br>
+            <ul class="list-unstyled" style="color: #803432; font-size:20px">
+                <li id="parameters"></li>
+                <li>Hover on a discipline line to view medal counts of discsipline by year </li>
+                <li>Click on discipline line to drill down and visualize athlete details  </li>
+            </ul>
             <div id="narrative_viz"></div>
-            <br>
-            <br>
+            <br><br><br><br>
+            <ul class="list-unstyled text-right" style="color: #803432; font-size:20px">
+                <li><a href="./medals_by_country.html">Click Here to start over  </a></li>
+            </ul>
         </div>
         <div class="col-sm-2 sidenav" id="discipline_info"></div>
     </div>
@@ -77,10 +85,7 @@
 </footer>
 
 <script>
-    document.getElementById('header_title').innerHTML =  `Medals counts by discipline for ${getParameterByName("country")} and ${getParameterByName("sport")}`;
-    document.getElementById('footer_title').innerHTML =  `Click on a disciple to visualize details of athlete`;
-
-
+    document.getElementById('parameters').innerHTML =  `Medals counts by discipline for Country=${getParameterByName("country")}, Sport=${getParameterByName("sport")}`;
     let years = new Set();
     let years_arr = [];
     let final_array = [];
@@ -194,17 +199,15 @@
             .style("stroke", function(d, i) { // Add dynamically
                 return colors(i); })
             .attr("d", d => {
-                // console.log('line=', line(d.values));
                 return line(d.values);
             });
 
-        let discipline_info = '<h1> </h1><p> </p><hr><h4><table class="table table-bordered pt-5"></h4>';
+        let discipline_info = '<ul class="list-group">'
         disciplines_arr = Array.from(disciplines);
         for (index in disciplines_arr) {
-            let row = `<tr><td style="color:${colors(index)}">${disciplines_arr[index]}</td></tr>`;
-            discipline_info = discipline_info + row;
+            discipline_info = discipline_info + `<li class="list-group-item" style="color:${colors(index)}">${disciplines_arr[index]}</li>`
         }
-        discipline_info = discipline_info + '</table>';
+
         document.getElementById('discipline_info').innerHTML = discipline_info;
 
         svg.call(hover, path, click);

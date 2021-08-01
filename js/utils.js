@@ -121,4 +121,3 @@ function getParameterByName(name) {
 
 let colors = d3.scaleLinear().domain([1,10])
     .range(["#007AFF", '#FCBA03', '#FC2403', '#1CFC03', '#FC035A', '#BF7B6C', '#D39419']);
-
